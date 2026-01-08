@@ -22,8 +22,10 @@ func TestLicenseMetrics(t *testing.T) {
 	assert.Equal(t, 100, int(lm.total["ansys@flex"]))
 	assert.Equal(t, 20, int(lm.used["ansys@flex"]))
 	assert.Equal(t, 80, int(lm.free["ansys@flex"]))
+	assert.Equal(t, 0, int(lm.reserved["ansys@flex"]))
 
 	assert.Equal(t, 30, int(lm.total["fluent@flex"]))
 	assert.Equal(t, 10, int(lm.used["fluent@flex"]))
 	assert.Equal(t, 20, int(lm.free["fluent@flex"]))
+	assert.Equal(t, 5, int(lm.reserved["fluent@flex"]))
 }

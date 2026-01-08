@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.3] - 2026-01-08
+
+This release adds the `slurm_license_reserved` metric for reserved license counts.
+
 ## [2.0.2] - 2025-11-16
 
 This release embraces the fork and removes any branding related to the previous repo.

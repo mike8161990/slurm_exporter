@@ -321,6 +321,7 @@ Provides metrics on license counts and usage.
 | `slurm_license_total` | Total count for license | `license` |
 | `slurm_license_used` | Used count for license | `license` |
 | `slurm_license_free` | Free count for license | `license` |
+| `slurm_license_reserved` | Reserved count for license | `license` |
 
 ### `node` Collector
 

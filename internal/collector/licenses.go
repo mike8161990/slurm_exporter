@@ -11,9 +11,10 @@ import (
 )
 
 type LicenseMetrics struct {
-	total map[string]float64
-	used  map[string]float64
-	free  map[string]float64
+	total    map[string]float64
+	used     map[string]float64
+	free     map[string]float64
+	reserved map[string]float64
 }
 
 func LicenseGetMetrics(logger *logger.Logger) (*LicenseMetrics, error) {
@@ -33,8 +34,9 @@ func ParseLicenseMetrics(input []byte) *LicenseMetrics {
 	lm.total = make(map[string]float64)
 	lm.used = make(map[string]float64)
 	lm.free = make(map[string]float64)
+	lm.reserved = make(map[string]float64)
 
-	lineExp := regexp.MustCompile(`LicenseName=(\S+) Total=(\d+) Used=(\d+) Free=(\d+)`)
+	lineExp := regexp.MustCompile(`LicenseName=(\S+) Total=(\d+) Used=(\d+) Free=(\d+) Reserved=(\d+)`)
 
 	lines := strings.SplitSeq(string(input), "\n")
 	for line := range lines {
@@ -47,10 +49,12 @@ func ParseLicenseMetrics(input []byte) *LicenseMetrics {
 		total, _ := strconv.ParseFloat(matches[2], 64)
 		used, _ := strconv.ParseFloat(matches[3], 64)
 		free, _ := strconv.ParseFloat(matches[4], 64)
+		reserved, _ := strconv.ParseFloat(matches[5], 64)
 
 		lm.total[name] = total
 		lm.used[name] = used
 		lm.free[name] = free
+		lm.reserved[name] = reserved
 	}
 	return &lm
 }
@@ -72,24 +76,27 @@ func NewLicensesCollector(logger *logger.Logger) *LicenseCollector {
 	labelnames := make([]string, 0, 1)
 	labelnames = append(labelnames, "license")
 	return &LicenseCollector{
-		total:  prometheus.NewDesc("slurm_license_total", "Total licenses", labelnames, nil),
-		used:   prometheus.NewDesc("slurm_license_used", "Used licenses", labelnames, nil),
-		free:   prometheus.NewDesc("slurm_license_free", "Free licenses", labelnames, nil),
-		logger: logger,
+		total:    prometheus.NewDesc("slurm_license_total", "Total licenses", labelnames, nil),
+		used:     prometheus.NewDesc("slurm_license_used", "Used licenses", labelnames, nil),
+		free:     prometheus.NewDesc("slurm_license_free", "Free licenses", labelnames, nil),
+		reserved: prometheus.NewDesc("slurm_license_reserved", "Reserved licenses", labelnames, nil),
+		logger:   logger,
 	}
 }
 
 type LicenseCollector struct {
-	total  *prometheus.Desc
-	used   *prometheus.Desc
-	free   *prometheus.Desc
-	logger *logger.Logger
+	total    *prometheus.Desc
+	used     *prometheus.Desc
+	free     *prometheus.Desc
+	reserved *prometheus.Desc
+	logger   *logger.Logger
 }
 
 func (lc *LicenseCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- lc.total
 	ch <- lc.used
 	ch <- lc.free
+	ch <- lc.reserved
 }
 
 func (lc *LicenseCollector) Collect(ch chan<- prometheus.Metric) {
@@ -104,5 +111,6 @@ func (lc *LicenseCollector) Collect(ch chan<- prometheus.Metric) {
 		ch <- prometheus.MustNewConstMetric(lc.total, prometheus.GaugeValue, lm.total[name], name)
 		ch <- prometheus.MustNewConstMetric(lc.used, prometheus.GaugeValue, lm.used[name], name)
 		ch <- prometheus.MustNewConstMetric(lc.free, prometheus.GaugeValue, lm.free[name], name)
+		ch <- prometheus.MustNewConstMetric(lc.reserved, prometheus.GaugeValue, lm.reserved[name], name)
 	}
 }
